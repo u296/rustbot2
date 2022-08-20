@@ -1,4 +1,4 @@
-mod prelude {
+pub mod prelude {
     pub use serenity::prelude::*;
     pub use std::error::Error;
     pub use tracing::*;

@@ -4,6 +4,7 @@ mod prelude {
         model::channel::Message,
         prelude::*,
     };
+    pub use super::super::prelude::*;
 }
 
 use serenity::framework::standard::macros::group;

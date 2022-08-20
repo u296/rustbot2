@@ -1,7 +1,7 @@
 use serenity::framework::standard::macros::group;
 
 pub mod prelude {
-    pub use super::prelude;
+    pub use super::super::prelude;
 }
 
 pub mod general;
