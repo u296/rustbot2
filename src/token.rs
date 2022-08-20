@@ -14,6 +14,7 @@ pub async fn get_token(args: &Args) -> Result<String, Box<dyn Error>> {
         info!("retrieving token via file '{}'", token_path.display());
         path = token_path
     } else {
+        let _ = error_span!("e").enter();
         info!("retrieving token via default file './token'");
         path = PathBuf::from_str("./token")?;
     }
