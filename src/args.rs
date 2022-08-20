@@ -14,5 +14,4 @@ pub struct Args {
 
     #[clap(long, short)]
     pub token: Option<String>,
-
 }

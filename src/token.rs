@@ -1,7 +1,9 @@
 use super::prelude::*;
 use crate::args::Args;
-use std::{path::{PathBuf, Path}, str::FromStr};
-
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 #[instrument]
 pub async fn get_token(args: &Args) -> Result<String, Box<dyn Error>> {
@@ -9,7 +11,7 @@ pub async fn get_token(args: &Args) -> Result<String, Box<dyn Error>> {
 
     if let Some(token) = args.token.clone() {
         info!("retrieved token via argument");
-        return Ok(token)
+        return Ok(token);
     } else if let Some(token_path) = args.token_path.clone() {
         info!("retrieving token via file '{}'", token_path.display());
         path = token_path
@@ -19,5 +21,5 @@ pub async fn get_token(args: &Args) -> Result<String, Box<dyn Error>> {
         path = PathBuf::from_str("./token")?;
     }
 
-    tokio::fs::read_to_string(path).await.map_err(|e|e.into())
+    tokio::fs::read_to_string(path).await.map_err(|e| e.into())
 }
