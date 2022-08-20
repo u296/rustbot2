@@ -4,6 +4,7 @@ mod prelude {
     pub use serenity::prelude::*;
 }
 
+use args::Args;
 use prelude::*;
 use songbird::SerenityInit;
 use tokio::try_join;
@@ -34,9 +35,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
     opentelemetry::global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
 
+    let args = args::Args::parse();
+
+
     let tracer = opentelemetry_jaeger::new_pipeline()
         .with_service_name("rustbot2")
         .with_auto_split_batch(true)
+        .with_agent_endpoint(&args.endpoint)
         .install_batch(opentelemetry::runtime::Tokio)?;
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
     let subscriber = tracing_subscriber::Registry::default().with(telemetry);
@@ -47,7 +52,7 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 
     let _enter = root.enter();
 
-    match run_bot().await {
+    match run_bot(args).await {
         Err(e) => {
             error!(e);
             Err(e)
@@ -58,8 +63,8 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 }
 
 #[instrument]
-async fn run_bot() -> Result<(), Box<dyn Error>> {
-    let args = args::Args::parse();
+async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
+    
 
 
     let (token,) = try_join!(token::get_token(&args))?;
