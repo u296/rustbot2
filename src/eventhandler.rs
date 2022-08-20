@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use serenity::client::bridge::gateway::ShardMessenger;
 
 use super::prelude::*;
 
@@ -18,5 +19,10 @@ impl EventHandler for Handler {
     async fn ready(&self, _ctx: Context, info: serenity::model::gateway::Ready) {
         info!("READY");
         println!("READY");
+    }
+
+    async fn message(&self, ctx: Context, _new_message: serenity::model::channel::Message) {
+        let x: &ShardMessenger = ctx.as_ref();
+        x.shutdown_clean();
     }
 }
