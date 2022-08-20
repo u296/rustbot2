@@ -40,8 +40,7 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 
     let tracer = opentelemetry_jaeger::new_pipeline()
         .with_service_name("rustbot2")
-        .with_auto_split_batch(true)
-        .with_agent_endpoint(&args.endpoint)
+        //.with_agent_endpoint(&args.endpoint)
         .install_batch(opentelemetry::runtime::Tokio)?;
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
     let subscriber = tracing_subscriber::Registry::default().with(telemetry);
