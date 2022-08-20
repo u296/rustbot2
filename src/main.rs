@@ -76,7 +76,7 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
     info!(token);
 
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix(".").delimiters(vec![" "]))
+        .configure(|c| c.with_whitespace(true).prefix(".").delimiters(vec![" "]))
         .group(&commands::GENERAL_GROUP)
         .after(after_hook);
 
