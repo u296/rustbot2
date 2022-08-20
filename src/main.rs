@@ -10,7 +10,7 @@ use args::Args;
 use clap::Parser;
 use commands::*;
 use prelude::*;
-use serenity::{client::bridge::gateway::ShardManager, framework::StandardFramework};
+use serenity::{client::bridge::gateway::ShardManager, framework::{StandardFramework, standard::{CommandError, macros::hook}}, model::channel::Message};
 use songbird::SerenityInit;
 use tokio::try_join;
 use tracing_subscriber::layer::SubscriberExt;
@@ -77,7 +77,8 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
 
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(".").delimiters(vec![" "]))
-        .group(&commands::GENERAL_GROUP);
+        .group(&commands::GENERAL_GROUP)
+        .after(after_hook);
 
     let gateway_intents = GatewayIntents::default()
         | GatewayIntents::GUILDS
@@ -106,4 +107,16 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
     });
 
     client.start().await.map_err(|e| e.into())
+}
+
+#[hook]
+async fn after_hook(_ctx: &Context, _: &Message, cmd_name: &str, error: Result<(), CommandError>) {
+    hook_proxy(cmd_name, error).await
+}
+
+#[instrument]
+async fn hook_proxy(cmd_name: &str, error: Result<(), CommandError>) {
+    if let Err(e) = error {
+        error!(e, "{} failed", cmd_name);
+    }
 }
