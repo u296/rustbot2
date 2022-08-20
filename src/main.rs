@@ -69,7 +69,7 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 
 #[instrument]
 fn log_version_info() {
-    info!(git_hash = env!("GIT_HASH"));
+    info!(git_hash = env!("GIT_HASH"), "build commit");
 }
 
 #[instrument]
