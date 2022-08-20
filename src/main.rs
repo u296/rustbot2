@@ -56,7 +56,7 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 
     tracing::subscriber::set_global_default(subscriber)?;
 
-    let root = trace_span!("app_start");
+    let root = info_span!("app_start");
 
     let _enter = root.enter();
     info!("root span started");
