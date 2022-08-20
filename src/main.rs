@@ -119,5 +119,6 @@ async fn after_hook(_ctx: &Context, _: &Message, cmd_name: &str, error: Result<(
 async fn hook_proxy(cmd_name: &str, error: Result<(), CommandError>) {
     if let Err(e) = error {
         error!(e, "{} failed", cmd_name);
+        println!("error: {}", e);
     }
 }
