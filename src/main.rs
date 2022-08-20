@@ -56,12 +56,6 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 
     tracing::subscriber::set_global_default(subscriber)?;
 
-    let root = info_span!("app_start");
-
-    let _enter = root.enter();
-    info!("root span started");
-    error!("git hash: {}", env!("GIT_HASH"));
-    drop(_enter);
 
     match run_bot(args).await {
         Err(e) => {
@@ -74,9 +68,14 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
 }
 
 #[instrument]
+fn log_version_info() {
+    info!(git_hash = env!("GIT_HASH"));
+}
+
+#[instrument]
 async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
     
-
+    log_version_info();
 
     let (token,) = try_join!(token::get_token(&args))?;
 
