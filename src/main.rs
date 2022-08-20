@@ -4,18 +4,26 @@ mod prelude {
     pub use serenity::prelude::*;
 }
 
+use std::sync::Arc;
+
 use args::Args;
 use prelude::*;
 use songbird::SerenityInit;
 use tokio::try_join;
 use tracing_subscriber::layer::SubscriberExt;
 use clap::Parser;
-use serenity::{framework::StandardFramework};
+use serenity::{framework::StandardFramework, client::bridge::gateway::ShardManager};
 
 
 mod token;
 mod args;
 mod eventhandler;
+
+struct ShardManagerContainer;
+
+impl TypeMapKey for ShardManagerContainer {
+    type Value = Arc<Mutex<ShardManager>>;
+}
 
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -92,6 +100,17 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
         .event_handler(eventhandler::Handler::new())
         .await?;
 
+    {
+        let mut data = client.data.write().await;
+        data.insert::<ShardManagerContainer>(client.shard_manager.clone());
+    }
+
+    let shard_manager = client.shard_manager.clone();
+
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c().await.expect("failed to wait for ctrl-c");
+        shard_manager.lock().await.shutdown_all().await;
+    });
     
 
     client.start().await.map_err(|e|e.into())
