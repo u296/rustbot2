@@ -61,6 +61,7 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
     let _enter = root.enter();
     info!("root span started");
     error!("git hash: {}", env!("GIT_HASH"));
+    drop(_enter);
 
     match run_bot(args).await {
         Err(e) => {
