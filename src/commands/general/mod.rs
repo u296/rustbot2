@@ -5,13 +5,17 @@ mod prelude {
         prelude::*,
     };
     pub use super::super::prelude::*;
+    
 }
 
 use serenity::framework::standard::macros::group;
 
 #[group]
-#[commands(ping)]
+#[commands(echo)]
 struct General;
 
-mod ping;
-use ping::*;
+mod echo;
+use echo::*;
+
+mod random;
+use random::*;
