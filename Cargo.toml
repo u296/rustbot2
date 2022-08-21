@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 
 async-trait = "0.1"
+rand = "0.8"
 
 tracing-opentelemetry = "0.17"
 opentelemetry-jaeger = {version = "0.16", features = ["rt-tokio"]}

@@ -1234,6 +1234,7 @@ dependencies = [
  "clap",
  "opentelemetry",
  "opentelemetry-jaeger",
+ "rand",
  "serenity",
  "songbird",
  "tokio",
