@@ -10,7 +10,9 @@ mod prelude {
 use serenity::framework::standard::macros::group;
 
 #[group]
-#[commands(echo)]
+#[commands(echo,
+    select_random,    
+)]
 struct General;
 
 mod echo;
