@@ -84,6 +84,7 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
         | GatewayIntents::GUILDS
         | GatewayIntents::GUILD_MEMBERS
         | GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT
         | GatewayIntents::GUILD_VOICE_STATES;
 
     let mut client = Client::builder(token, gateway_intents)
