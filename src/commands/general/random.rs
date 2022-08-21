@@ -1,6 +1,6 @@
 use super::prelude::*;
 use rand::{seq::SliceRandom, thread_rng};
-use serenity::model::channel::{ChannelType, Channel};
+use serenity::model::channel::{Channel, ChannelType};
 
 #[command]
 #[aliases("pick", "random")]
@@ -68,15 +68,16 @@ async fn split_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult 
                         None
                     }
                 })
-                .find(|c| c.name == args.message()) {
-                    Some(c) => {
-                        c
-                    }
-                    None => {
-                        msg.channel_id.say(ctx, "you need to specify a voice channel to split to").await?;
-                        return Ok(())
-                    }
-                };
+                .find(|c| c.name == args.message())
+            {
+                Some(c) => c,
+                None => {
+                    msg.channel_id
+                        .say(ctx, "you need to specify a voice channel to split to")
+                        .await?;
+                    return Ok(());
+                }
+            };
 
             let call_channel_id = voice_state.channel_id.unwrap();
 
