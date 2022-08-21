@@ -4,6 +4,7 @@ use tracing::*;
 
 #[command]
 async fn ping(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    println!("ping");
     ping_proxy(ctx, msg, args).await
 }
 

@@ -21,4 +21,8 @@ impl EventHandler for Handler {
         println!("READY");
         println!("git hash: {}", env!("GIT_HASH"));
     }
+
+    async fn message(&self, _ctx: Context, msg: serenity::model::channel::Message) {
+        println!("new message: {}", msg.content);
+    }
 }
