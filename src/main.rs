@@ -10,7 +10,14 @@ use args::Args;
 use clap::Parser;
 use commands::*;
 use prelude::*;
-use serenity::{client::bridge::gateway::ShardManager, framework::{StandardFramework, standard::{CommandError, macros::hook}}, model::channel::Message};
+use serenity::{
+    client::bridge::gateway::ShardManager,
+    framework::{
+        standard::{macros::hook, CommandError},
+        StandardFramework,
+    },
+    model::channel::Message,
+};
 use songbird::SerenityInit;
 use tokio::try_join;
 use tracing_subscriber::layer::SubscriberExt;
