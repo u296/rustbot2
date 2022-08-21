@@ -11,7 +11,8 @@ use serenity::framework::standard::macros::group;
 
 #[group]
 #[commands(echo,
-    select_random,    
+    select_random,
+    split,    
 )]
 struct General;
 
