@@ -95,7 +95,7 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let track_handle = call.lock().await.enqueue_source(source);
 
-
+    msg.channel_id.say(ctx, "playing").await?;
 
     Ok(())
 }
