@@ -34,6 +34,13 @@ async fn spam_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
         let target_name = args.message();
 
+        /*  target order:
+         * mentioned users
+         * mentioned roles
+         * role names
+         * member names
+         */
+
         let targets: Vec<MentionableAdapter> = if !msg.mentions.is_empty() {
             msg.mentions
                 .iter()
@@ -44,16 +51,15 @@ async fn spam_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 .iter()
                 .map(|x| MentionableAdapter::from(x))
                 .collect()
+        } else if let Some(role) = guild.role_by_name(target_name) {
+            vec![MentionableAdapter::from(role)]
+        } else if let Some(m) = guild.member_named(target_name) {
+            vec![MentionableAdapter::from(m)]
         } else {
-            match guild.member_named(target_name) {
-                Some(m) => vec![MentionableAdapter::from(m)],
-                None => {
-                    msg.channel_id
-                        .say(ctx, format!("no user named {}", target_name))
-                        .await?;
-                    return Ok(());
-                }
-            }
+            msg.channel_id
+                .say(ctx, format!("no user named {}", target_name))
+                .await?;
+            return Ok(());
         };
 
         let mut m = MessageBuilder::new();
