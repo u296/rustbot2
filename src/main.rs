@@ -9,7 +9,6 @@ use std::sync::Arc;
 
 use args::Args;
 use clap::Parser;
-use commands::*;
 use prelude::*;
 use serenity::{
     client::bridge::gateway::ShardManager,

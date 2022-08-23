@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use serenity::client::bridge::gateway::ShardMessenger;
 
 use super::prelude::*;
 

@@ -1,7 +1,7 @@
 use super::prelude::*;
 use crate::args::Args;
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     str::FromStr,
 };
 

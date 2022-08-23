@@ -4,7 +4,7 @@ use serenity::model::channel::{Channel, ChannelType};
 
 #[command]
 #[aliases("pick", "random")]
-async fn select_random(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn select_random(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     select_random_proxy(ctx, msg, args).await
 }
 
