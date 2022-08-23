@@ -33,6 +33,7 @@ async fn spam_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         let guild = msg.guild(ctx).unwrap();
 
         let target_name = args.message();
+        info!(target_name);
 
         /*  target order:
          * mentioned users
@@ -42,20 +43,25 @@ async fn spam_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
          */
 
         let targets: Vec<MentionableAdapter> = if !msg.mentions.is_empty() {
+            info!("target is mentioned users");
             msg.mentions
                 .iter()
                 .map(|x| MentionableAdapter::from(x))
                 .collect()
         } else if !msg.mention_roles.is_empty() {
+            info!("target is mentioned roles");
             msg.mention_roles
                 .iter()
                 .map(|x| MentionableAdapter::from(x))
                 .collect()
         } else if let Some(role) = guild.role_by_name(target_name) {
+            info!("target is role by name");
             vec![MentionableAdapter::from(role)]
         } else if let Some(m) = guild.member_named(target_name) {
+            info!("target is user by name");
             vec![MentionableAdapter::from(m)]
         } else {
+            warn!("failed to acquire target");
             msg.channel_id
                 .say(ctx, format!("no user named {}", target_name))
                 .await?;
