@@ -37,7 +37,7 @@ async fn skip_command_proxy(ctx: &Context, msg: &Message, args: Args) -> Command
 #[only_in(guilds)]
 #[aliases("loop")]
 async fn loop_command(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    loop_command(ctx, msg, args).await
+    loop_command_proxy(ctx, msg, args).await
 }
 
 #[instrument(skip(ctx))]
