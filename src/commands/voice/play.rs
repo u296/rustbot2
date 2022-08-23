@@ -22,14 +22,15 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let channel = match guild.voice_states.get(&msg.author.id) {
         None => {
-            error!("author does not have voice state");
+            info!("author does not have voice state");
+            msg.channel_id.say(ctx, "you are not in a voice channel").await?;
             return Ok(())
         },
         Some(vs) => {
             match vs.channel_id {
                 None => {
-                    msg.channel_id.say(ctx, "you are not in a voice channel").await?;
                     info!("author was not in voice channel");
+                    msg.channel_id.say(ctx, "you are not in a voice channel").await?;
                     return Ok(());
                 },
                 Some(c) => c
@@ -37,31 +38,35 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    let mut maybe_call = None;
-
-    let purge_call = if let Some(call) = manager.get(guild.id) {
+    let call = if let Some(call) = manager.get(guild.id) {
         if call.lock().await.current_channel() == Some(channel.into()) {
-            maybe_call = Some(call);
-            false
+            info!("call in the right channel already exists");
+            call
             
         } else {
-            true
+            info!("call exists, but is in the wrong channel. Purging.");
+
+            match manager.remove(guild.id).await {
+                Err(e) => {
+                    error!("failed to remove handler: {}", e);
+                    return Err(e.into());
+                },
+                Ok(_) => ()
+            }
+
+            let (newcall, result) = manager.join(guild.id, channel).await;
+            match result {
+                Ok(_) => (),
+                Err(e) => {
+                    error!("failed to join: {}", e);
+                    return Err(e.into());
+                }
+            }
+
+            newcall
         }
     } else {
-        true
-    };
-
-
-
-    if purge_call {
-        match manager.remove(guild.id).await {
-            Err(e) => {
-                error!("failed to remove handler: {}", e);
-                return Err(e.into());
-            },
-            Ok(_) => ()
-        }
-
+        info!("call doesn't exist");
         let (call, result) = manager.join(guild.id, channel).await;
         match result {
             Ok(_) => (),
@@ -70,10 +75,8 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 return Err(e.into());
             }
         }
-        maybe_call = Some(call);
-    }
-
-    let call = maybe_call.unwrap();
+        call
+    };
 
     call.lock().await.enqueue_source(source);
 
