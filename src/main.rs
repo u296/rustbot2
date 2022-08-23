@@ -2,6 +2,7 @@ pub mod prelude {
     pub use serenity::prelude::*;
     pub use std::error::Error;
     pub use tracing::*;
+    pub use tokio::{join, try_join, select};
 }
 
 use std::sync::Arc;
@@ -85,6 +86,7 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
     let framework = StandardFramework::new()
         .configure(|c| c.with_whitespace(true).prefix(".").delimiters(vec![" "]))
         .group(&commands::GENERAL_GROUP)
+        .group(&commands::VOICE_GROUP)
         .after(after_hook);
 
     let gateway_intents = GatewayIntents::default()

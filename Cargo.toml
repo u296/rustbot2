@@ -22,6 +22,7 @@ version = "0.1"
 
 [dependencies.songbird]
 version = "0.3"
+features = ["builtin-queue"]
 
 [dependencies.tokio]
 version = "1.20"
