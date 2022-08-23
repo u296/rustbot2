@@ -54,6 +54,7 @@ impl EventHandler for Handler {
                                         };
 
                                         if !user.bot {
+                                            info!("there is a real user in the call");
                                             return; // there is a real person in the call, we shouldn't leave
                                         }
                                     }
