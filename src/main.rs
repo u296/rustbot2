@@ -120,7 +120,6 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
 #[hook]
 async fn after_hook(_ctx: &Context, _: &Message, cmd_name: &str, error: Result<(), CommandError>) {
     hook_proxy(cmd_name, error).await;
-    println!("hook");
 }
 
 #[instrument]
