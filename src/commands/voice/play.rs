@@ -1,5 +1,8 @@
+use std::sync::Arc;
+use std::fmt::Debug;
+
 use super::prelude::*;
-use songbird::{input::{Input, ytdl_search, cached}, ytdl, driver::Bitrate};
+use songbird::{input::{Input, ytdl_search, cached}, ytdl, driver::Bitrate, Call};
 
 const BITRATE: Bitrate = Bitrate::BitsPerSecond(128000);
 
@@ -14,47 +17,59 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = msg.guild(ctx).unwrap();
 
-    let (manager, source) = join!(songbird::get(ctx), get_yt_source(args.message()));
+    let download_audio_handle = tokio::spawn(get_yt_source::<String>(args.message().into()));
 
-    let manager = manager.unwrap();
-    let source = source?;
+    let manager = songbird::get(ctx).await.unwrap();
 
-
-    let channel = match guild.voice_states.get(&msg.author.id) {
-        None => {
-            info!("author does not have voice state");
-            msg.channel_id.say(ctx, "you are not in a voice channel").await?;
-            return Ok(())
-        },
-        Some(vs) => {
-            match vs.channel_id {
-                None => {
-                    info!("author was not in voice channel");
-                    msg.channel_id.say(ctx, "you are not in a voice channel").await?;
-                    return Ok(());
-                },
-                Some(c) => c
+    let call_retrieve = async move {
+        let channel = match guild.voice_states.get(&msg.author.id) {
+            None => {
+                info!("author does not have voice state");
+                msg.channel_id.say(ctx, "you are not in a voice channel").await?;
+                return Ok::<Option<Arc<Mutex<Call>>>, Box<dyn Error + Send + Sync>>(None)
+            },
+            Some(vs) => {
+                match vs.channel_id {
+                    None => {
+                        info!("author was not in voice channel");
+                        msg.channel_id.say(ctx, "you are not in a voice channel").await?;
+                        return Ok(None);
+                    },
+                    Some(c) => c
+                }
             }
-        }
-    };
+        };
 
-    let call = if let Some(call) = manager.get(guild.id) {
-        if call.lock().await.current_channel() == Some(channel.into()) {
-            info!("call in the right channel already exists");
-            call
-            
+        if let Some(call) = manager.get(guild.id) {
+            if call.lock().await.current_channel() == Some(channel.into()) {
+                info!("call in the right channel already exists");
+                Ok(Some(call))
+                
+            } else {
+                info!("call exists, but is in the wrong channel. Purging.");
+
+                match manager.remove(guild.id).await {
+                    Err(e) => {
+                        error!("failed to remove handler: {}", e);
+                        return Err(e.into());
+                    },
+                    Ok(_) => ()
+                }
+
+                let (newcall, result) = manager.join(guild.id, channel).await;
+                match result {
+                    Ok(_) => (),
+                    Err(e) => {
+                        error!("failed to join: {}", e);
+                        return Err(e.into());
+                    }
+                }
+
+                Ok(Some(newcall))
+            }
         } else {
-            info!("call exists, but is in the wrong channel. Purging.");
-
-            match manager.remove(guild.id).await {
-                Err(e) => {
-                    error!("failed to remove handler: {}", e);
-                    return Err(e.into());
-                },
-                Ok(_) => ()
-            }
-
-            let (newcall, result) = manager.join(guild.id, channel).await;
+            info!("call doesn't exist");
+            let (call, result) = manager.join(guild.id, channel).await;
             match result {
                 Ok(_) => (),
                 Err(e) => {
@@ -62,23 +77,25 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                     return Err(e.into());
                 }
             }
-
-            newcall
+            Ok(Some(call))
         }
-    } else {
-        info!("call doesn't exist");
-        let (call, result) = manager.join(guild.id, channel).await;
-        match result {
-            Ok(_) => (),
-            Err(e) => {
-                error!("failed to join: {}", e);
-                return Err(e.into());
-            }
-        }
-        call
     };
 
-    call.lock().await.enqueue_source(source);
+    let call = match call_retrieve.await? {
+        Some(c) => c,
+        None => {
+            download_audio_handle.abort();
+            return Ok(());
+        }
+    };
+
+    msg.channel_id.say(ctx, "searching").await?;
+
+    let source = download_audio_handle.await??;
+
+    let track_handle = call.lock().await.enqueue_source(source);
+
+
 
     Ok(())
 }
@@ -86,8 +103,9 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
 
 #[instrument]
-async fn get_yt_source(text: &str) -> Result<Input, Box<dyn Error + Send + Sync>> {
-    let src = match if text.starts_with("https://") {
+async fn get_yt_source<S>(text: S) -> Result<Input, Box<dyn Error + Send + Sync>>
+where S: AsRef<str> + Debug {
+    let src = match if text.as_ref().starts_with("https://") {
         info!("received link");
         ytdl(text).await
     } else {
