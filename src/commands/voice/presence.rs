@@ -71,6 +71,7 @@ async fn join_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
 #[command]
 #[only_in(guilds)]
+#[aliases("stfu", "stop", "shutup")]
 async fn leave(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     leave_proxy(ctx, msg, args).await
 }
