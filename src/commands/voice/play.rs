@@ -93,9 +93,14 @@ async fn play_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let source = download_audio_handle.await??;
 
-    call.lock().await.enqueue_source(source);
+    let mut lock = call.lock().await;
+    lock.enqueue_source(source);
 
-    msg.channel_id.say(ctx, "playing").await?;
+    if lock.queue().len() > 1 {
+        msg.channel_id.say(ctx, "placed in queue").await?;
+    } else {
+        msg.channel_id.say(ctx, "playing").await?;
+    }
 
     Ok(())
 }
