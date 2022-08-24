@@ -1,8 +1,8 @@
 pub mod prelude {
     pub use serenity::prelude::*;
     pub use std::error::Error;
+    pub use tokio::{join, select, try_join};
     pub use tracing::*;
-    pub use tokio::{join, try_join, select};
 }
 
 use std::sync::Arc;
@@ -19,7 +19,7 @@ use serenity::{
     model::channel::Message,
 };
 use songbird::SerenityInit;
-use tracing_subscriber::{layer::SubscriberExt, Layer, EnvFilter};
+use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
 
 mod args;
 mod commands;
@@ -57,9 +57,11 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
     let subscriber = tracing_subscriber::Registry::default()
         .with(telemetry)
-        .with(tracing_subscriber::fmt::layer()
-                        .pretty()
-                        .with_filter(EnvFilter::from_default_env()));
+        .with(
+            tracing_subscriber::fmt::layer()
+                .pretty()
+                .with_filter(EnvFilter::from_default_env()),
+        );
 
     tracing::subscriber::set_global_default(subscriber)?;
 

@@ -1,9 +1,6 @@
 use super::prelude::*;
 use crate::args::Args;
-use std::{
-    path::PathBuf,
-    str::FromStr,
-};
+use std::{path::PathBuf, str::FromStr};
 
 #[instrument]
 pub async fn get_token(args: &Args) -> Result<String, Box<dyn Error>> {

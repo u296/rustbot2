@@ -8,7 +8,6 @@ async fn join(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
 #[instrument(skip(ctx))]
 async fn join_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-
     let guild = msg.guild(ctx).unwrap();
 
     let channel = match guild.voice_states.get(&msg.author.id) {
@@ -16,22 +15,19 @@ async fn join_proxy(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             info!("author has no voice state");
             msg.channel_id.say(ctx, "you are not in a channel").await?;
             return Ok(());
-        },
-        Some(voice_state) => {
-            match voice_state.channel_id {
-                None => {
-                    info!("author is not in a channel");
-                    msg.channel_id.say(ctx, "you are not in a channel").await?;
-                    return Ok(());
-                },
-                Some(c) => c
-            }
         }
+        Some(voice_state) => match voice_state.channel_id {
+            None => {
+                info!("author is not in a channel");
+                msg.channel_id.say(ctx, "you are not in a channel").await?;
+                return Ok(());
+            }
+            Some(c) => c,
+        },
     };
 
-
     let manager = songbird::get(ctx).await.unwrap();
-    
+
     if let Some(call) = manager.get(guild.id) {
         if call.lock().await.current_channel() == Some(channel.into()) {
             info!("already in channel");

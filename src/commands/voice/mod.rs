@@ -7,8 +7,6 @@ mod prelude {
     };
 }
 
-
-
 use serenity::framework::standard::macros::group;
 
 #[group]

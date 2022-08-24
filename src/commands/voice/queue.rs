@@ -23,7 +23,7 @@ async fn skip_command_proxy(ctx: &Context, msg: &Message, args: Args) -> Command
                     return Err(e.into());
                 }
             }
-        },
+        }
         None => {
             info!("call does not exist");
             msg.channel_id.say(ctx, "not in a call").await?;
@@ -49,10 +49,10 @@ async fn loop_command_proxy(ctx: &Context, msg: &Message, args: Args) -> Command
             info!("there is no handler");
             msg.channel_id.say(ctx, "not in a call").await?;
             return Ok(());
-        },
+        }
         Some(call) => {
             info!("there is a handler");
-            
+
             let lock = call.lock().await;
 
             if lock.current_channel().is_none() {
@@ -72,32 +72,26 @@ async fn loop_command_proxy(ctx: &Context, msg: &Message, args: Args) -> Command
             let track = lock.queue().current().unwrap();
 
             match track.get_info().await {
-                Ok(info) => {
-                    match info.loops {
-                        LoopState::Finite(_) => {
-                            match track.enable_loop() {
-                                Ok(()) => {
-                                    msg.channel_id.say(ctx, "enabled looping").await?;
-                                },
-                                Err(e) => {
-                                    error!("failed to enable looping: {}", e);
-                                    return Err(e.into());
-                                }
-                            }
-                        },
-                        LoopState::Infinite => {
-                            match track.disable_loop() {
-                                Ok(()) => {
-                                    msg.channel_id.say(ctx, "disabled looping").await?;
-                                },
-                                Err(e) => {
-                                    error!("failed to disable looping: {}", e);
-                                    return Err(e.into());
-                                }
-                            }
+                Ok(info) => match info.loops {
+                    LoopState::Finite(_) => match track.enable_loop() {
+                        Ok(()) => {
+                            msg.channel_id.say(ctx, "enabled looping").await?;
                         }
-                    }
-                }, 
+                        Err(e) => {
+                            error!("failed to enable looping: {}", e);
+                            return Err(e.into());
+                        }
+                    },
+                    LoopState::Infinite => match track.disable_loop() {
+                        Ok(()) => {
+                            msg.channel_id.say(ctx, "disabled looping").await?;
+                        }
+                        Err(e) => {
+                            error!("failed to disable looping: {}", e);
+                            return Err(e.into());
+                        }
+                    },
+                },
                 Err(e) => {
                     error!("failed to get track info: {}", e);
                     return Err(e.into());
