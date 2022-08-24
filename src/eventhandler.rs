@@ -29,7 +29,7 @@ impl EventHandler for Handler {
     async fn voice_state_update(
         &self,
         ctx: Context,
-        old: Option<serenity::model::voice::VoiceState>,
+        _old: Option<serenity::model::voice::VoiceState>,
         new: serenity::model::voice::VoiceState,
     ) {
         match new.guild_id {
