@@ -53,11 +53,11 @@ impl EventHandler for Handler {
                                             }
                                         };
 
-                                        info!("user in same channel named: {}", user.name);
+                                        info!(user_name = user.name, user_id = user.id.0);
 
                                         if !user.bot {
                                             info!("there is a real user in the call");
-                                            return; // there is a real person in the call, we shouldn't leave
+                                            return;
                                         }
                                     }
                                 }
@@ -74,7 +74,7 @@ impl EventHandler for Handler {
                         info!("no real people in call, removing handler");
 
                         
-                        
+                        drop(lock);
 
                         match manager.remove(guild_id).await {
                             Ok(()) => (),
@@ -82,6 +82,8 @@ impl EventHandler for Handler {
                                 error!("failed to remove handler: {}", e);
                             }
                         }
+
+                        info!("successfully removed handler");
 
                     },
                     None => {
