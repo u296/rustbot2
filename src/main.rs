@@ -19,8 +19,7 @@ use serenity::{
     model::channel::Message,
 };
 use songbird::SerenityInit;
-use tokio::try_join;
-use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::{layer::SubscriberExt, Layer, EnvFilter};
 
 mod args;
 mod commands;
@@ -56,7 +55,11 @@ async fn telemetry_setup() -> Result<(), Box<dyn Error>> {
         //.with_auto_split_batch(true)
         .install_simple()?; //batch(opentelemetry::runtime::Tokio)?;
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
-    let subscriber = tracing_subscriber::Registry::default().with(telemetry);
+    let subscriber = tracing_subscriber::Registry::default()
+        .with(telemetry)
+        .with(tracing_subscriber::fmt::layer()
+                        .pretty()
+                        .with_filter(EnvFilter::from_default_env()));
 
     tracing::subscriber::set_global_default(subscriber)?;
 
