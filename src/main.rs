@@ -19,6 +19,7 @@ use serenity::{
     model::channel::Message,
 };
 use songbird::SerenityInit;
+use tokio::signal::unix::SignalKind;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
 
 mod args;
@@ -113,10 +114,15 @@ async fn run_bot(args: Args) -> Result<(), Box<dyn Error>> {
 
     let shard_manager = client.shard_manager.clone();
 
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("failed to wait for ctrl-c");
+    tokio::spawn(async move {        
+        let mut sigterm_stream = tokio::signal::unix::signal(SignalKind::interrupt()).expect("failed to setup SIGINT handler");
+        let mut sigint_stream = tokio::signal::unix::signal(SignalKind::terminate()).expect("failed to setup SIGTERM handler");
+
+        select!{
+            _ = sigterm_stream.recv() => (),
+            _ = sigint_stream.recv() => (),
+        };
+        
         shard_manager.lock().await.shutdown_all().await;
     });
 
