@@ -53,6 +53,8 @@ impl EventHandler for Handler {
                                             }
                                         };
 
+                                        info!("user in same channel named: {}", user.name);
+
                                         if !user.bot {
                                             info!("there is a real user in the call");
                                             return; // there is a real person in the call, we shouldn't leave
